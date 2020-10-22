@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #cd ~/Assignment1/fastq
-#mkdir fastqc_result
+mkdir fastqc_result
 
 # Raw data quality check and put uncompressed output files in a directory
-#fastqc -t 64 -extract -outdir fastqc_result *.fq.gz
+fastqc -t 64 -extract -outdir fastqc_result *.fq.gz
 
 # Find the paths for fastqc output files
 cd ~/Assignment1/fastq/fastqc_result
@@ -24,10 +24,11 @@ done >> file1 # save the information in file1
 cat file1 #show results on screen
 
 # Format conversion from .fq to .fa
-cd ~/Assignment1/fastq
-for fq in *.fq.gz
-do /localdisk/home/s1544765/seqtk/seqtk seq -a $fq> $fq\.fa
-done
+# Not sure if needed
+#cd ~/Assignment1/fastq
+#for fq in *.fq.gz
+#do /localdisk/home/s1544765/seqtk/seqtk seq -a $fq> $fq\.fa
+#done
 
 # Prepare reference genome for alignment
 cd /localdisk/data/BPSM/Assignment1/Tbb_genome/
@@ -39,7 +40,8 @@ mkdir reference_index
 gunzip Tb927_genome.fasta.gz
 bowtie2-build --threads 64 Tb927_genome.fasta reference_index/
 
-
+#
+bowtie2 --threads 64 -x reference_index/ -1 216_L8_1.fq.gz -2 216_L8_2.fq -S gene_pair1.sam
 
 
 
