@@ -34,9 +34,9 @@ cat file1 #show results on screen
 # Prepare reference genome for alignment
 cd /localdisk/data/BPSM/Assignment1/Tbb_genome/
 cp Tb927_genome.fasta.gz ~/Assignment1/fastq
+cd ~/Assignment1/fastq
 
 # Make indexed reference using bowtie2
-cd ~/Assignment1/fastq
 mkdir reference_index
 gunzip Tb927_genome.fasta.gz
 bowtie2-build --threads 64 Tb927_genome.fasta reference_index/
@@ -55,11 +55,23 @@ do
 	bowtie2 --threads 64 -x reference_index/ -1 $sq1 -2 $sq2 -S gene_pair$number\.sam	#alignment
 	echo -e "Done alighnment of gene pair $number"
 	samtools view -b -h -o gene_pair$number\.bam gene_pair$number\.sam	#convert sam file into bam
-	samtools sort gene_pair$number\.sam > gene_pair$number\.srt.sam		#sort bam file
-	samtools index gene_pair$number\.srt.sam	#index bam
+	samtools sort gene_pair$number\.bam > gene_pair$number\.srt.bam		#sort bam file
+	samtools index gene_pair$number\.srt.bam	#index bam
 	echo -e "SAM->BAM->INDEXED SORT BAM created for gene pair $number"
 -----------
 done
 
+# Prepare the file with gene location information
+cd /localdisk/data/BPSM/Assignment1/
+cp Tbbgenes.bed ~/Assignment1/fastq
+cd ~/Assignment1/fastq
 
+# Prepare a file for mean count
+echo -e "Gene\tSlender_216\tSlender_218\tSlender_219\tStumpy_220\tStumpy_221\tStumpy_222" > count_mean.txt	#add head
 
+# Generate number of reads
+for number in $(seq $gene_pair_number);
+do
+        bedtools bamtobed -i gene_pair$number\.srt.bam > gene_pair$number\.bed		#sorted	bam to bed 
+        bedtools coverage -a Tbbgenes.bed -b gene_pair$number\.bed -mean |cut -f 4,7 > count$number.txt		#output in seperate files
+done
