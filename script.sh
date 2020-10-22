@@ -67,11 +67,18 @@ cp Tbbgenes.bed ~/Assignment1/fastq
 cd ~/Assignment1/fastq
 
 # Prepare a file for mean count
-echo -e "Gene\tSlender_216\tSlender_218\tSlender_219\tStumpy_220\tStumpy_221\tStumpy_222" > count_mean.txt	#add head
+echo -e "Gene\tSlender_216\tSlender_218\tSlender_219\tStumpy_220\tStumpy_221\tStumpy_222" > count_mean.txt	#add header
 
 # Generate number of reads
 for number in $(seq $gene_pair_number);
 do
         bedtools bamtobed -i gene_pair$number\.srt.bam > gene_pair$number\.bed		#sorted	bam to bed 
         bedtools coverage -a Tbbgenes.bed -b gene_pair$number\.bed -mean |cut -f 4,7 > count$number.txt		#output in seperate files
+	echo -e "mean gene count for gene pair $number is done" 
 done
+
+# Make and format output file
+
+paste count*.txt > combine.txt
+cut -f 1,2,4,6,8,10,12 combine.txt >> count_mean.txt
+cat count_mean.txt| head
