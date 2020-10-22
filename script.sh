@@ -1,22 +1,24 @@
 #!/bin/bash
 
-cd ~/Assignment1/fastq
-
-mkdir fastqc_result
+#cd ~/Assignment1/fastq
+#mkdir fastqc_result
 
 # Raw data quality check and put uncompressed output files in one directory
-fastqc -t 64 -extract -outdir fastqc_result *.fq.gz
+#fastqc -t 64 -extract -outdir fastqc_result *.fq.gz
 
-# Assess number and quality 
+# Find the paths for fastqc output files
 cd ~/Assignment1/fastq/fastqc_result
-mk fastqc_output
-for dirs, files in fastqc_result:
-for name in files:
-if (name == "fastqc_data.txt"):
-cat fastqc_data.txt |grep -m1 -i filename > fastqc_output
-cat fastqc_data.txt |grep -m1 -i total >> fastqc_output
-cat fastqc_data.txt |grep -m1 -i quality >> fastqc_output
-fi
-if (name =="summary.txt"):
-cat summary.txt |cut -f 1,2 |awk '{FS="\t"; if ($1 =="FAIL"||$1 =="WARN"){print $0}}' >>fastqc_output
-fi
+find -type f -name fastqc_data* > output.list
+find -type f -name summary* >> output.list
+sort -o output.list output.list
+
+# Extract sequence numbers and quality details 
+for i in `cat output.list`;
+do cat $i|grep -m1 -i filename
+cat $i|grep -m1 -i total
+cat $i|grep -m1 "Sequence length"
+cat $i|grep -m1 -i flag
+cat $i|cut -f 1,2 |awk '{FS="\t"; if ($1 =="FAIL"||$1 =="WARN"&&$1 !="PASS"){print $0}}'
+echo ------------;
+done >> file1 # save the information in file1
+cat file1
