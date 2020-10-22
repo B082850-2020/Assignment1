@@ -3,7 +3,7 @@
 #cd ~/Assignment1/fastq
 #mkdir fastqc_result
 
-# Raw data quality check and put uncompressed output files in one directory
+# Raw data quality check and put uncompressed output files in a directory
 #fastqc -t 64 -extract -outdir fastqc_result *.fq.gz
 
 # Find the paths for fastqc output files
@@ -21,4 +21,17 @@ cat $i|grep -m1 -i flag
 cat $i|cut -f 1,2 |awk '{FS="\t"; if ($1 =="FAIL"||$1 =="WARN"&&$1 !="PASS"){print $0}}'
 echo ------------;
 done >> file1 # save the information in file1
-cat file1
+cat file1 #show results on screen
+
+# Format conversion from .fq to .fa
+cd ~/Assignment1/fastq
+for fq in *.fq.gz
+do /localdisk/home/s1544765/seqtk/seqtk seq -a $fq> $fq\.fa
+done
+
+#
+
+
+
+
+
