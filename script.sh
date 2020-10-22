@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Prepare fastq files
-cd /localdisk/data/BPSM/Assignment1/fastq
-cp fastq ~/Assignment1
+cd /localdisk/data/BPSM/Assignment1/
+cp -r fastq ~/Assignment1
 cd ~/Assignment1/fastq
+mkdir fastqc_result
 
 
 # Raw data quality check and put uncompressed output files in a directory
-mkdir fastqc_result
 fastqc -t 64 -extract -outdir fastqc_result *.fq.gz
 echo -e "----------------------------------- \n
 fastqc done, files in directory fastqc_result"
@@ -43,7 +43,8 @@ cd ~/Assignment1/fastq
 # Make indexed reference using bowtie2
 mkdir reference_index
 gunzip Tb927_genome.fasta.gz
-bowtie2-build --threads 64 Tb927_genome.fasta reference_index/
+echo -e "preparing indexed reference genome..."
+bowtie2-build --threads 64 --quiet Tb927_genome.fasta reference_index/
 
 
 # Prepare sequence lists for pair-ended alignment
@@ -57,14 +58,14 @@ for number in $(seq $gene_pair_number);
 do 
 	sq1=$(sed -n $number\p odd.list)
 	sq2=$(sed -n $number\p even.list)
-	echo -e "start pair-ended alignment of $sq1 and $sq2"
+	echo -e "------------------------\n start pair-ended alignment of $sq1 and $sq2"
 	bowtie2 --threads 64 -x reference_index/ -1 $sq1 -2 $sq2 -S gene_pair$number\.sam	#alignment
 	echo -e "Done alighnment of gene pair $number"
 	samtools view -b -h -o gene_pair$number\.bam gene_pair$number\.sam	#convert sam file into bam
 	samtools sort gene_pair$number\.bam > gene_pair$number\.srt.bam		#sort bam file
 	samtools index gene_pair$number\.srt.bam	#index bam
 	echo -e "SAM->BAM->INDEXED SORT BAM created for gene pair $number"
-        echo ---------------------
+        echo ------------------------
 done
 
 
@@ -90,5 +91,6 @@ done
 # Make and format output file
 paste count*.txt > combine.txt
 cut -f 1,2,4,6,8,10,12 combine.txt >> count_mean.txt
-echo -e "Showing head of the final gene count output file..."
+echo -e "------------------------------------- \n
+Showing head of the final gene count output file...\n"
 cat count_mean.txt| head
