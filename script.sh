@@ -52,8 +52,12 @@ do
 	sq1=$(sed -n $number\p odd.list)
 	sq2=$(sed -n $number\p even.list)
 	echo -e "start pair-ended alignment of $sq1 and $sq2"
-	bowtie2 --threads 64 -x reference_index/ -1 $sq1 -2 $sq2 -S gene_pair$number\.sam
-echo -e "Done alighnment of gene pair $number
+	bowtie2 --threads 64 -x reference_index/ -1 $sq1 -2 $sq2 -S gene_pair$number\.sam	#alignment
+	echo -e "Done alighnment of gene pair $number"
+	samtools view -b -h -o gene_pair$number\.bam gene_pair$number\.sam	#convert sam file into bam
+	samtools sort gene_pair$number\.sam > gene_pair$number\.srt.sam		#sort bam file
+	samtools index gene_pair$number\.srt.sam	#index bam
+	echo -e "SAM->BAM->INDEXED SORT BAM created for gene pair $number"
 -----------
 done
 
