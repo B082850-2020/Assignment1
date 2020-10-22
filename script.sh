@@ -29,7 +29,16 @@ for fq in *.fq.gz
 do /localdisk/home/s1544765/seqtk/seqtk seq -a $fq> $fq\.fa
 done
 
-#
+# Prepare reference genome for alignment
+cd /localdisk/data/BPSM/Assignment1/Tbb_genome/
+cp Tb927_genome.fasta.gz ~/Assignment1/fastq
+
+# Make indexed reference using bowtie2
+cd ~/Assignment1/fastq
+mkdir reference_index
+gunzip Tb927_genome.fasta.gz
+bowtie2-build --threads 64 Tb927_genome.fasta reference_index/
+
 
 
 
