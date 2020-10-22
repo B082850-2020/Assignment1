@@ -14,12 +14,13 @@ sort -o output.list output.list
 
 # Extract sequence numbers and quality details 
 for i in `cat output.list`;
-do cat $i|grep -m1 -i filename
-cat $i|grep -m1 -i total
-cat $i|grep -m1 "Sequence length"
-cat $i|grep -m1 -i flag
-cat $i|cut -f 1,2 |awk '{FS="\t"; if ($1 =="FAIL"||$1 =="WARN"&&$1 !="PASS"){print $0}}'
-echo ------------;
+do 
+	cat $i|grep -m1 -i filename
+	cat $i|grep -m1 -i total
+	cat $i|grep -m1 "Sequence length"
+	cat $i|grep -m1 -i flag
+	cat $i|cut -f 1,2 |awk '{FS="\t"; if ($1 =="FAIL"||$1 =="WARN"&&$1 !="PASS"){print $0}}'
+	echo ------------;
 done >> file1 # save the information in file1
 cat file1 #show results on screen
 
@@ -40,9 +41,21 @@ mkdir reference_index
 gunzip Tb927_genome.fasta.gz
 bowtie2-build --threads 64 Tb927_genome.fasta reference_index/
 
-#
-bowtie2 --threads 64 -x reference_index/ -1 216_L8_1.fq.gz -2 216_L8_2.fq -S gene_pair1.sam
+# Prepare sequence lists for pair-ended alignment
+find -type f -name "*_1*.gz"|sort > odd.list
+find -type f -name "*_2*.gz"|sort > even.list
+gene_pair_number=$(< "odd.list" wc -l)
 
+# Pair-ended alignment of gene pairs with reference genome
+for number in $(seq $gene_pair_number);
+do 
+	sq1=$(sed -n $number\p odd.list)
+	sq2=$(sed -n $number\p even.list)
+	echo -e "start pair-ended alignment of $sq1 and $sq2"
+	bowtie2 --threads 64 -x reference_index/ -1 $sq1 -2 $sq2 -S gene_pair$number\.sam
+echo -e "Done alighnment of gene pair $number
+-----------
+done
 
 
 
